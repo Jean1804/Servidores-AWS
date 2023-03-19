@@ -1,0 +1,23 @@
+pipeline {
+  agent any
+
+    environment
+    {
+        access_key = "AKIASTO3UJGY2DERDQWH"
+        secret_key = "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"
+    }
+
+  stages {
+    stage('terraform') {
+      steps {
+        sh '''
+            terraform --version
+            terraform init
+            terraform plan
+            terraform apply -auto-approve -var "access_key=${AKIASTO3UJGY2DERDQWH}" -var "secret_key=${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}" 
+        '''
+      }
+    }  
+  }
+}
+
