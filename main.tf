@@ -1,7 +1,7 @@
 provider "aws" {
     region = "us-east-1"
-    access_key = "AKIASTO3UJGY2DERDQWH"
-    secret_key = "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"
+    access_key = "AKIA27ZBNVBRBHPYGJ6P"
+    secret_key = "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"
 }
 
 resource "aws_eip" "web" {
@@ -12,7 +12,7 @@ resource "aws_eip" "web" {
 resource "aws_instance" "web" {
     ami = "ami-005f9685cb30f234b"
     instance_type = "t2.micro"
-    key_name = "uresoft_key"
+    key_name = "Accesskey"
     vpc_security_group_ids = [aws_security_group.web.id]
     associate_public_ip_address = true
 
@@ -43,7 +43,7 @@ resource "aws_instance" "web" {
 resource "aws_instance" "Jenkins_Server" {
   ami           = "ami-005f9685cb30f234b"
   instance_type = "t2.micro"
-  key_name      = "uresoft_key"
+  key_name      = "Accesskey"
   vpc_security_group_ids = [aws_security_group.jenkins_server.id]
   associate_public_ip_address = true
 
@@ -52,6 +52,12 @@ resource "aws_instance" "Jenkins_Server" {
   user_data = <<EOF
               #!/bin/bash
               sudo yum update -y
+              sudo yum install git -y
+              sudo wget https://releases.hashicorp.com/terraform/1.4.2/terraform_1.4.2_linux_amd64.zip
+              unzip terraform_1.4.2_linux_amd64.zip
+              sudo mv terraform /usr/local/bin
+              sudo chmod +x /usr/local/bin/terraform
+              terraform version
               sudo amazon-linux-extras install java-openjdk11 -y
               sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
               sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
@@ -85,8 +91,36 @@ resource "aws_security_group" "web" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-  }    
+  }
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port = 443
+    to_port = 443
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }   
+  egress {
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }         
 }
+
+
+
+
 
 #Reglas de Entradas en Servidor Jenkins
 resource "aws_security_group" "jenkins_server" {
@@ -115,6 +149,24 @@ resource "aws_security_group" "jenkins_server" {
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+    egress {
+    from_port = 443
+    to_port = 443
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }   
+  egress {
+    from_port = 8080
+    to_port = 8080
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }   
 }
 
 resource "aws_vpc" "web" {
